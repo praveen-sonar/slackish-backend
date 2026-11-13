@@ -24,7 +24,7 @@ public class AuthController {
     @PostMapping("/register")
     public AuthDtos.UserView register(@RequestBody AuthDtos.RegisterRequest req, HttpServletRequest request) {
         User u = authService.register(req.email(), req.displayName(), req.password());
-        HttpSession session = request.getSession(true);
+        HttpSession session = newAuthenticatedSession(request);
         session.setAttribute(CurrentUserResolver.SESSION_UID, u.getId());
         return view(u);
     }
@@ -32,7 +32,7 @@ public class AuthController {
     @PostMapping("/login")
     public AuthDtos.UserView login(@RequestBody AuthDtos.LoginRequest req, HttpServletRequest request) {
         User u = authService.authenticate(req.email(), req.password());
-        HttpSession session = request.getSession(true);
+        HttpSession session = newAuthenticatedSession(request);
         session.setAttribute(CurrentUserResolver.SESSION_UID, u.getId());
         return view(u);
     }
@@ -60,6 +60,14 @@ public class AuthController {
     @PostMapping("/reset")
     public void reset(@RequestBody AuthDtos.ResetRequest req) {
         authService.completePasswordReset(req.token(), req.newPassword());
+    }
+
+    private HttpSession newAuthenticatedSession(HttpServletRequest request) {
+        HttpSession existing = request.getSession(false);
+        if (existing != null) {
+            existing.invalidate();
+        }
+        return request.getSession(true);
     }
 
     private AuthDtos.UserView view(User u) {
