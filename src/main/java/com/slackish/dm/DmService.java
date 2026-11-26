@@ -1,8 +1,12 @@
 package com.slackish.dm;
 
 import com.slackish.common.Errors;
+import com.slackish.common.Paging;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -37,9 +41,34 @@ public class DmService {
         return dmMessages.findByConversationIdOrderByCreatedAtAsc(conversationId);
     }
 
+    /** Newest first. {@code before} is an exclusive message id cursor. Participants only. */
+    public List<DmMessage> messagesPage(Long conversationId, Long userId, Long before, Integer limit) {
+        DmConversation c = get(conversationId);
+        if (!isParticipant(c, userId)) {
+            throw Errors.forbidden("Not a participant in this conversation");
+        }
+        return dmMessages.findByConversationIdAndIdLessThanOrderByIdDesc(
+                conversationId, before == null ? Long.MAX_VALUE : before, PageRequest.of(0, Paging.limit(limit)));
+    }
+
+    public List<DmMessage> search(Long workspaceId, Long userId, String q, Instant before, Pageable page) {
+        List<Long> conversationIds = conversations.findByUserAIdOrUserBId(userId, userId).stream()
+                .filter(c -> c.getWorkspaceId().equals(workspaceId))
+                .map(DmConversation::getId)
+                .toList();
+        if (conversationIds.isEmpty()) {
+            return List.of();
+        }
+        return dmMessages.search(conversationIds, q, before, page);
+    }
+
+    private boolean isParticipant(DmConversation c, Long userId) {
+        return c.getUserAId().equals(userId) || c.getUserBId().equals(userId);
+    }
+
     public DmMessage send(Long conversationId, Long senderId, String body) {
         DmConversation c = get(conversationId);
-        if (!c.getUserAId().equals(senderId) && !c.getUserBId().equals(senderId)) {
+        if (!isParticipant(c, senderId)) {
             throw Errors.forbidden("Not a participant in this conversation");
         }
         DmMessage m = new DmMessage();

@@ -3,6 +3,7 @@ package com.slackish.message;
 import com.slackish.common.Uid;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -22,8 +23,17 @@ public class MessageController {
     }
 
     @GetMapping("/channels/{channelId}/messages")
-    public List<MessageDtos.MessageView> list(@PathVariable Long channelId, @Uid Long uid) {
-        return messageService.listChannel(channelId, uid).stream().map(this::view).toList();
+    public List<MessageDtos.MessageView> list(@PathVariable Long channelId,
+                                              @RequestParam(required = false) Long before,
+                                              @RequestParam(required = false) Integer limit, @Uid Long uid) {
+        return messageService.listChannel(channelId, uid, before, limit).stream().map(this::view).toList();
+    }
+
+    @GetMapping("/workspaces/{workspaceId}/search")
+    public List<MessageDtos.SearchResult> search(@PathVariable Long workspaceId, @RequestParam String q,
+                                                 @RequestParam(required = false) Instant before,
+                                                 @RequestParam(required = false) Integer limit, @Uid Long uid) {
+        return messageService.search(workspaceId, uid, q, before, limit);
     }
 
     @GetMapping("/messages/{id}")

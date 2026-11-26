@@ -18,8 +18,6 @@ Channel listing in `message` is capped at the first 50 messages, oldest first, w
 - DTOs: add a search-result record to `MessageDtos`. Don't introduce JPA associations (per CLAUDE.md).
 - Use `Errors.*` for failures and `@Uid Long uid` on the new endpoints.
 
-## Caveats found in CLAUDE.md's known gaps
-`MessageService.post` and `DmService.get/messages` lack membership/participant checks. The new search and paging code must enforce them, or it will leak private data. Fixing those neighbours would be a sensible companion change.
 
 ## Alternatives considered
 Unread counts / mentions, reactions, and message delete. These are valuable, but they are less blocking than being unable to read past message 50.

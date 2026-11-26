@@ -26,9 +26,11 @@ public class DmController {
     }
 
     @GetMapping("/{conversationId}")
-    public DmDtos.ConversationDetail get(@PathVariable Long conversationId, @Uid Long uid) {
+    public DmDtos.ConversationDetail get(@PathVariable Long conversationId,
+                                         @RequestParam(required = false) Long before,
+                                         @RequestParam(required = false) Integer limit, @Uid Long uid) {
         DmConversation c = dmService.get(conversationId);
-        List<DmDtos.DmMessageView> msgs = dmService.messages(conversationId).stream()
+        List<DmDtos.DmMessageView> msgs = dmService.messagesPage(conversationId, uid, before, limit).stream()
                 .map(m -> new DmDtos.DmMessageView(m.getId(), m.getConversationId(), m.getSenderId(),
                         m.getBody(), m.getCreatedAt()))
                 .toList();
