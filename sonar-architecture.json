@@ -1,0 +1,97 @@
+{
+  "perspectives": [
+    {
+      "language": "java",
+      "qualifiers": "file",
+      "label": "java Current Model",
+      "description": "Slackish is a layered Spring Boot monolith packaged by feature under com.slackish. common, user and workspace are the foundation: workspace (tenant, membership, roles) provides the authorization primitives used by the feature packages. Feature packages (channel, message, dm, invitation, auth) sit on top of them, admin orchestrates across features, and config wires and seeds everything at the top. Reflects the dependencies observed in the code today, including the common to auth cycle.",
+      "groups": [
+        {
+          "label": "common",
+          "patterns": ["src/main/java/com/slackish/common/**"],
+          "description": "ApiException, Errors factory, GlobalExceptionHandler, @Uid annotation and CurrentUserResolver. Shared by every package. Currently depends on auth (JWT parsing in the resolver)."
+        },
+        {
+          "label": "user",
+          "patterns": ["src/main/java/com/slackish/user/**"],
+          "description": "User entity, repository and controller."
+        },
+        {
+          "label": "workspace",
+          "patterns": ["src/main/java/com/slackish/workspace/**"],
+          "description": "Workspace (tenant), Membership, Role and WorkspaceService.requireMember/requireAdmin, the tenant-level authorization primitives."
+        },
+        {
+          "label": "audit",
+          "patterns": ["src/main/java/com/slackish/audit/**"],
+          "description": "AuditLog entity and AuditService.record. Has no internal dependencies."
+        },
+        {
+          "label": "auth",
+          "patterns": ["src/main/java/com/slackish/auth/**"],
+          "description": "Register, login, logout, password reset, bot API tokens and JWT issue/parse."
+        },
+        {
+          "label": "channel",
+          "patterns": ["src/main/java/com/slackish/channel/**"],
+          "description": "Public and private channels and ChannelMember. Scoped to a workspace."
+        },
+        {
+          "label": "message",
+          "patterns": ["src/main/java/com/slackish/message/**"],
+          "description": "Channel messages with threads and edits. Depends on channel for membership."
+        },
+        {
+          "label": "dm",
+          "patterns": ["src/main/java/com/slackish/dm/**"],
+          "description": "Direct-message conversations and messages between two users."
+        },
+        {
+          "label": "invitation",
+          "patterns": ["src/main/java/com/slackish/invitation/**"],
+          "description": "Single and bulk invitations. Accepting one creates or reactivates a Membership."
+        },
+        {
+          "label": "admin",
+          "patterns": ["src/main/java/com/slackish/admin/**"],
+          "description": "Role changes, member deactivation, audit log listing and workspace export. Orchestrates across feature packages."
+        },
+        {
+          "label": "config",
+          "patterns": ["src/main/java/com/slackish/config/**", "src/main/java/com/slackish/SlackishApplication.java"],
+          "description": "Application entry point, SecurityConfig, WebConfig and DataSeeder. Top of the stack, wires and seeds the feature packages."
+        }
+      ],
+      "constraints": [
+        { "from": "config",     "to": "auth" },
+        { "from": "config",     "to": "channel" },
+        { "from": "config",     "to": "common" },
+        { "from": "config",     "to": "dm" },
+        { "from": "config",     "to": "message" },
+        { "from": "config",     "to": "user" },
+        { "from": "config",     "to": "workspace" },
+        { "from": "admin",      "to": "audit" },
+        { "from": "admin",      "to": "channel" },
+        { "from": "admin",      "to": "common" },
+        { "from": "admin",      "to": "dm" },
+        { "from": "admin",      "to": "invitation" },
+        { "from": "admin",      "to": "message" },
+        { "from": "admin",      "to": "user" },
+        { "from": "admin",      "to": "workspace" },
+        { "from": "auth",       "to": "common" },
+        { "from": "auth",       "to": "user" },
+        { "from": "channel",    "to": "common" },
+        { "from": "channel",    "to": "workspace" },
+        { "from": "common",     "to": "auth" },
+        { "from": "dm",         "to": "common" },
+        { "from": "invitation", "to": "common" },
+        { "from": "invitation", "to": "workspace" },
+        { "from": "message",    "to": "channel" },
+        { "from": "message",    "to": "common" },
+        { "from": "user",       "to": "common" },
+        { "from": "workspace",  "to": "common" },
+        { "from": "workspace",  "to": "user" }
+      ]
+    }
+  ]
+}
