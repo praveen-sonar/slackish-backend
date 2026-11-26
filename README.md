@@ -32,5 +32,7 @@ See `src/main/resources/application.yml` for server, datasource, session, and JW
 - `GET|POST /api/workspaces/{id}/channels`, `POST /api/channels/{id}/join`, `DELETE /api/channels/{id}`
 - `GET|POST /api/channels/{id}/messages`, `GET /api/messages/{id}`, `GET /api/messages/{id}/thread`
 - `GET|POST /api/dms`, `GET /api/dms/{id}`, `POST /api/dms/{id}/messages`
+- `GET /api/workspaces/{id}/search?q=...`: case-insensitive search over visible channel messages and the caller's own DMs
+- Message lists (`GET /api/channels/{id}/messages`, `GET /api/dms/{id}`, search) are newest first and paged with `?before=<messageId>&limit=<n>` (default 50, max 100). Search pages DMs with `dmBefore`.
 - `POST /api/workspaces/{id}/invitations[/bulk]`, `POST /api/invitations/accept`
 - `GET /api/admin/workspaces/{id}/audit|export`, `POST .../change-role|deactivate-member`
