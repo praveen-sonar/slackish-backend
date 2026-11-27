@@ -1,5 +1,7 @@
 package com.slackish.admin;
 
+import com.slackish.attachment.AttachmentDtos;
+import com.slackish.attachment.AttachmentService;
 import com.slackish.audit.AuditLog;
 import com.slackish.audit.AuditLogRepository;
 import com.slackish.audit.AuditService;
@@ -37,11 +39,13 @@ public class AdminController {
     private final WorkspaceRepository workspaces;
     private final AuditLogRepository auditLogs;
     private final AuditService auditService;
+    private final AttachmentService attachmentService;
 
     public AdminController(WorkspaceService workspaceService, MembershipRepository memberships,
                            UserRepository users, ChannelRepository channels, MessageRepository messages,
                            DmConversationRepository conversations, InvitationRepository invitations,
-                           WorkspaceRepository workspaces, AuditLogRepository auditLogs, AuditService auditService) {
+                           WorkspaceRepository workspaces, AuditLogRepository auditLogs, AuditService auditService,
+                           AttachmentService attachmentService) {
         this.workspaceService = workspaceService;
         this.memberships = memberships;
         this.users = users;
@@ -52,6 +56,7 @@ public class AdminController {
         this.workspaces = workspaces;
         this.auditLogs = auditLogs;
         this.auditService = auditService;
+        this.attachmentService = attachmentService;
     }
 
     @PostMapping("/workspaces/{id}/deactivate-member")
@@ -96,6 +101,8 @@ public class AdminController {
         dump.put("messages", msgs);
         dump.put("conversations", conversations.findByWorkspaceId(id));
         dump.put("invitations", invitations.findByWorkspaceId(id));
+        dump.put("attachments", attachmentService.listForWorkspace(id).stream()
+                .map(AttachmentDtos.AttachmentView::of).toList());
         return dump;
     }
 }

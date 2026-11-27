@@ -32,5 +32,6 @@ See `src/main/resources/application.yml` for server, datasource, session, and JW
 - `GET|POST /api/workspaces/{id}/channels`, `POST /api/channels/{id}/join`, `DELETE /api/channels/{id}`
 - `GET|POST /api/channels/{id}/messages`, `GET /api/messages/{id}`, `GET /api/messages/{id}/thread`
 - `GET|POST /api/dms`, `GET /api/dms/{id}`, `POST /api/dms/{id}/messages`
+- `GET|POST /api/messages/{id}/attachments`, `GET|POST /api/dms/messages/{id}/attachments` (multipart `file`, max 10 MB), `GET|DELETE /api/attachments/{id}`
 - `POST /api/workspaces/{id}/invitations[/bulk]`, `POST /api/invitations/accept`
 - `GET /api/admin/workspaces/{id}/audit|export`, `POST .../change-role|deactivate-member`
