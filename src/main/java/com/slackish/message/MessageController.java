@@ -1,11 +1,9 @@
 package com.slackish.message;
 
-import com.slackish.common.Errors;
 import com.slackish.common.Uid;
-import com.slackish.dm.DmDtos;
-import com.slackish.dm.DmService;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -13,11 +11,9 @@ import java.util.List;
 public class MessageController {
 
     private final MessageService messageService;
-    private final DmService dmService;
 
-    public MessageController(MessageService messageService, DmService dmService) {
+    public MessageController(MessageService messageService) {
         this.messageService = messageService;
-        this.dmService = dmService;
     }
 
     @PostMapping("/channels/{channelId}/messages")
@@ -34,19 +30,10 @@ public class MessageController {
     }
 
     @GetMapping("/workspaces/{workspaceId}/search")
-    public MessageDtos.SearchResults search(@PathVariable Long workspaceId, @RequestParam(required = false) String q,
-                                            @RequestParam(required = false) Long before,
-                                            @RequestParam(required = false) Long dmBefore,
-                                            @RequestParam(required = false) Integer limit, @Uid Long uid) {
-        if (q == null || q.isBlank()) {
-            throw Errors.badRequest("q is required");
-        }
-        String query = q.strip();
-        List<MessageDtos.MessageView> channelHits = messageService.search(workspaceId, uid, query, before, limit)
-                .stream().map(this::view).toList();
-        List<DmDtos.DmMessageView> dmHits = dmService.search(workspaceId, uid, query, dmBefore, limit)
-                .stream().map(DmDtos.DmMessageView::of).toList();
-        return new MessageDtos.SearchResults(channelHits, dmHits);
+    public List<MessageDtos.SearchResult> search(@PathVariable Long workspaceId, @RequestParam String q,
+                                                 @RequestParam(required = false) Instant before,
+                                                 @RequestParam(required = false) Integer limit, @Uid Long uid) {
+        return messageService.search(workspaceId, uid, q, before, limit);
     }
 
     @GetMapping("/messages/{id}")
