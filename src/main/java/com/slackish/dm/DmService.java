@@ -43,6 +43,13 @@ public class DmService {
         return c;
     }
 
+    /** Returns the DM message if the caller is a participant in its conversation. */
+    public DmMessage getMessage(Long dmMessageId, Long userId) {
+        DmMessage m = dmMessages.findById(dmMessageId).orElseThrow(() -> Errors.notFound("Message not found"));
+        get(m.getConversationId(), userId);
+        return m;
+    }
+
     public List<DmMessage> messages(Long conversationId, Long userId, Long before, Integer limit) {
         get(conversationId, userId);
         return dmMessages.findByConversationIdAndIdLessThanOrderByIdDesc(

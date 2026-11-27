@@ -9,4 +9,5 @@ public final class Errors {
     public static ApiException notFound(String m) { return new ApiException(HttpStatus.NOT_FOUND, m); }
     public static ApiException badRequest(String m) { return new ApiException(HttpStatus.BAD_REQUEST, m); }
     public static ApiException conflict(String m) { return new ApiException(HttpStatus.CONFLICT, m); }
+    public static ApiException payloadTooLarge(String m) { return new ApiException(HttpStatus.PAYLOAD_TOO_LARGE, m); }
 }
