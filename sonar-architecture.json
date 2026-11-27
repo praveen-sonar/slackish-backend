@@ -52,6 +52,11 @@
           "description": "Single and bulk invitations. Accepting one creates or reactivates a Membership."
         },
         {
+          "label": "attachment",
+          "patterns": ["src/main/java/com/slackish/attachment/**"],
+          "description": "File attachments on channel and DM messages. Metadata in H2, content on local disk under app.attachments.dir."
+        },
+        {
           "label": "admin",
           "patterns": ["com.slackish.admin.**"],
           "description": "Role changes, member deactivation, audit log listing and workspace export. Orchestrates across feature packages."
@@ -70,6 +75,7 @@
         { "from": "config",     "to": "message" },
         { "from": "config",     "to": "user" },
         { "from": "config",     "to": "workspace" },
+        { "from": "admin",      "to": "attachment" },
         { "from": "admin",      "to": "audit" },
         { "from": "admin",      "to": "channel" },
         { "from": "admin",      "to": "common" },
@@ -78,6 +84,11 @@
         { "from": "admin",      "to": "message" },
         { "from": "admin",      "to": "user" },
         { "from": "admin",      "to": "workspace" },
+        { "from": "attachment", "to": "channel" },
+        { "from": "attachment", "to": "common" },
+        { "from": "attachment", "to": "dm" },
+        { "from": "attachment", "to": "message" },
+        { "from": "attachment", "to": "workspace" },
         { "from": "auth",       "to": "common" },
         { "from": "auth",       "to": "user" },
         { "from": "channel",    "to": "common" },

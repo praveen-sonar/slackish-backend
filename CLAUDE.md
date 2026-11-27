@@ -12,7 +12,7 @@ mvn package             # build the jar
 
 - H2 console: http://localhost:8080/h2 (JDBC URL `jdbc:h2:mem:slackish`, user `sa`, empty password).
 - Seed login (all users): password `password123`. Users: `alice@acme.io` (owner), `adam@acme.io` (admin), `amy@acme.io` (member), `bob@globex.io` (owner), `betty@globex.io` (member).
-- Config lives in `src/main/resources/application.yml` (`app.jwt.secret`, `app.frontend-origin`, datasource, session cookie settings).
+- Config lives in `src/main/resources/application.yml` (`app.jwt.secret`, `app.frontend-origin`, `app.attachments.dir`, datasource, multipart limits, session cookie settings).
 
 ## Architecture
 
@@ -37,9 +37,10 @@ Entities reference each other by plain `Long` id fields (e.g. `workspaceId`, `us
 - `message`: channel `Message` with optional `parentId` for threaded replies, `editedAt` for edits. Channel listing is newest first, cursor-paged with `before`/`limit` (`common.Paging`, default 50, max 100). Workspace search lives in `MessageController` and combines `MessageService.search` and `DmService.search`.
 - `dm`: `DmConversation` (two participants, `userAId`/`userBId`, per workspace) and `DmMessage`.
 - `invitation`: single and bulk invitations with a UUID token and 7-day expiry. Accepting one creates or reactivates a `Membership` with the invited role.
-- `admin`: `AdminController` for member deactivation, role change, audit log listing and full workspace export.
+- `attachment`: `Attachment` metadata for files on a channel `Message` (`messageId`) or a `DmMessage` (`dmMessageId`). Content is stored on disk by `AttachmentStorage` under `app.attachments.dir`, keyed by a UUID. Read access follows the parent message (channel member or DM participant), upload is author only, delete is uploader or workspace admin. Max 10 MB, downloads are always `Content-Disposition: attachment`.
+- `admin`: `AdminController` for member deactivation, role change, audit log listing and full workspace export (built by `WorkspaceExportService`).
 - `audit`: `AuditLog` entity and `AuditService.record(...)`. Currently written only by the admin actions.
-- `common`: `ApiException` + `Errors` factory (`badRequest/unauthorized/forbidden/notFound/conflict`), `GlobalExceptionHandler` (returns `{"error", "status"}` JSON), `@Uid` annotation and `CurrentUserResolver`.
+- `common`: `ApiException` + `Errors` factory (`badRequest/unauthorized/forbidden/notFound/conflict/payloadTooLarge`), `GlobalExceptionHandler` (returns `{"error", "status"}` JSON), `@Uid` annotation and `CurrentUserResolver`.
 - `config`: `SecurityConfig` (CORS, BCrypt bean), `WebConfig` (registers `CurrentUserResolver`), `DataSeeder` (two demo tenants, Acme and Globex).
 
 ### Authentication and authorization flow
@@ -55,6 +56,7 @@ Entities reference each other by plain `Long` id fields (e.g. `workspaceId`, `us
 User ──< Membership >── Workspace ──< Channel ──< ChannelMember >── User
                             │             └──< Message (parentId → thread)
                             ├──< DmConversation ──< DmMessage
+                            ├──< Attachment (messageId | dmMessageId)
                             ├──< Invitation
                             └──< AuditLog
 PasswordResetToken >── User
@@ -68,8 +70,9 @@ The schema is recreated on every start, and there are no migrations. `DataSeeder
 - **Workspaces (multi-tenant):** a user can belong to many workspaces. The creator becomes `OWNER`.
 - **Channels:** public or private, create/list/join/delete.
 - **Messaging:** post, fetch, thread listing, edit (author only) in channels. Direct messages between two members.
+- **Attachments:** upload, list, download and delete files on channel and DM messages.
 - **Invitations:** invite by email (single or bulk), accept by token.
-- **Admin:** change role, deactivate member, view audit log, export workspace data (members, channels, messages, DMs, invitations).
+- **Admin:** change role, deactivate member, view audit log, export workspace data (members, channels, messages, DMs, invitations, attachment metadata).
 
 Endpoint list: see `README.md`.
 

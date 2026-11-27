@@ -44,6 +44,13 @@ public class MessageService {
         return messages.findById(id).orElseThrow(() -> Errors.notFound("Message not found"));
     }
 
+    /** Returns the message if the caller is a member of its channel. */
+    public Message getVisible(Long id, Long userId) {
+        Message m = getById(id);
+        requireChannelMember(m.getChannelId(), userId);
+        return m;
+    }
+
     public List<Message> listChannel(Long channelId, Long userId, Long before, Integer limit) {
         requireChannelMember(channelId, userId);
         return messages.findByChannelIdAndIdLessThanOrderByIdDesc(channelId, Paging.before(before), Paging.limit(limit));

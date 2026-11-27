@@ -4,6 +4,7 @@ import com.slackish.common.Errors;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WorkspaceService {
@@ -36,6 +37,14 @@ public class WorkspaceService {
                 .map(m -> workspaces.findById(m.getWorkspaceId()).orElse(null))
                 .filter(java.util.Objects::nonNull)
                 .toList();
+    }
+
+    public Optional<Workspace> find(Long workspaceId) {
+        return workspaces.findById(workspaceId);
+    }
+
+    public List<Membership> memberships(Long workspaceId) {
+        return memberships.findByWorkspaceId(workspaceId);
     }
 
     public Membership requireMember(Long workspaceId, Long userId) {
