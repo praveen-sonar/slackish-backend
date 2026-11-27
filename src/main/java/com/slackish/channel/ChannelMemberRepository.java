@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface ChannelMemberRepository extends JpaRepository<ChannelMember, Long> {
     List<ChannelMember> findByChannelId(Long channelId);
+    List<ChannelMember> findByUserId(Long userId);
     Optional<ChannelMember> findByChannelIdAndUserId(Long channelId, Long userId);
     boolean existsByChannelIdAndUserId(Long channelId, Long userId);
 }

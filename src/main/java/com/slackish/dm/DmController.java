@@ -26,11 +26,12 @@ public class DmController {
     }
 
     @GetMapping("/{conversationId}")
-    public DmDtos.ConversationDetail get(@PathVariable Long conversationId, @Uid Long uid) {
-        DmConversation c = dmService.get(conversationId);
-        List<DmDtos.DmMessageView> msgs = dmService.messages(conversationId).stream()
-                .map(m -> new DmDtos.DmMessageView(m.getId(), m.getConversationId(), m.getSenderId(),
-                        m.getBody(), m.getCreatedAt()))
+    public DmDtos.ConversationDetail get(@PathVariable Long conversationId,
+                                         @RequestParam(required = false) Long before,
+                                         @RequestParam(required = false) Integer limit, @Uid Long uid) {
+        DmConversation c = dmService.get(conversationId, uid);
+        List<DmDtos.DmMessageView> msgs = dmService.messages(conversationId, uid, before, limit).stream()
+                .map(DmDtos.DmMessageView::of)
                 .toList();
         return new DmDtos.ConversationDetail(view(c), msgs);
     }
@@ -38,8 +39,7 @@ public class DmController {
     @PostMapping("/{conversationId}/messages")
     public DmDtos.DmMessageView send(@PathVariable Long conversationId,
                                      @RequestBody DmDtos.SendDmRequest req, @Uid Long uid) {
-        DmMessage m = dmService.send(conversationId, uid, req.body());
-        return new DmDtos.DmMessageView(m.getId(), m.getConversationId(), m.getSenderId(), m.getBody(), m.getCreatedAt());
+        return DmDtos.DmMessageView.of(dmService.send(conversationId, uid, req.body()));
     }
 
     private DmDtos.ConversationView view(DmConversation c) {

@@ -6,7 +6,7 @@ REST API for Slackish, a lightweight Slack-like team messaging app. Spring Boot 
 
 ```bash
 mvn spring-boot:run     # start API on :8080 (H2 in-memory, seeded on startup)
-mvn test                # run tests (none exist yet)
+mvn test                # run tests
 mvn package             # build the jar
 ```
 
@@ -34,7 +34,7 @@ Entities reference each other by plain `Long` id fields (e.g. `workspaceId`, `us
 - `user`: `User` entity (email, display name, BCrypt password hash), `UserController`.
 - `workspace`: `Workspace` (the tenant), `Membership` (user ↔ workspace with `Role` and `active` flag), `Role` = `OWNER | ADMIN | MEMBER`. `WorkspaceService.requireMember/requireAdmin` are the tenant-level authorization primitives.
 - `channel`: `Channel` (public or private, belongs to a workspace) and `ChannelMember`. Private channels are only listed for their members.
-- `message`: channel `Message` with optional `parentId` for threaded replies, `editedAt` for edits. Channel listing is capped at the first 50 messages, oldest first.
+- `message`: channel `Message` with optional `parentId` for threaded replies, `editedAt` for edits. Channel listing is newest first, cursor-paged with `before`/`limit` (`common.Paging`, default 50, max 100). Workspace search lives in `MessageController` and combines `MessageService.search` and `DmService.search`.
 - `dm`: `DmConversation` (two participants, `userAId`/`userBId`, per workspace) and `DmMessage`.
 - `invitation`: single and bulk invitations with a UUID token and 7-day expiry. Accepting one creates or reactivates a `Membership` with the invited role.
 - `admin`: `AdminController` for member deactivation, role change, audit log listing and full workspace export.
@@ -88,7 +88,7 @@ Worth knowing before changing related code. Some are probably intentional for a 
 - `SecurityConfig` permits all requests and disables CSRF. Session fixation protection is off.
 - `AuthService.authenticate` returns the user without a password check when the password is null or empty.
 - Password-reset tokens are derivable (`userId-hash(email)`), valid for 30 days, are not checked for expiry on use, and are not deleted after use. `beginPasswordReset` returns the token to the caller and reveals whether an email exists.
-- `AdminController.export` has no `requireAdmin` or `requireMember` check. `MessageService.post`, `ChannelService.join`/`delete`, `InvitationService.listForWorkspace`/`accept` and `DmService.get`/`messages`/`create` also lack the membership, ownership or participant checks that their neighbouring methods have.
+- `AdminController.export` has no `requireAdmin` or `requireMember` check. `MessageService.post`, `ChannelService.join`/`delete`, `InvitationService.listForWorkspace`/`accept` and `DmService.create` also lack the membership, ownership or participant checks that their neighbouring methods have.
 - `InvitationService.accept` doesn't check expiry, status or that the invitation email matches the accepting user. `invite` only requires membership, so any member can invite with any role.
 - `Membership.active` is set to `false` on deactivation, but `requireMember` doesn't check it.
 - `GlobalExceptionHandler` returns raw exception messages for unexpected errors.
