@@ -2,7 +2,7 @@
   "perspectives": [
     {
       "language": "java",
-      "qualifiers": "file",
+      "qualifiers": "namespace",
       "label": "java Current Model",
       "description": "Slackish is a layered Spring Boot monolith packaged by feature under com.slackish. common, user and workspace are the foundation: workspace (tenant, membership, roles) provides the authorization primitives used by the feature packages. Feature packages (channel, message, dm, invitation, auth) sit on top of them, admin orchestrates across features, and config wires and seeds everything at the top. Reflects the dependencies observed in the code today, including the common to auth cycle.",
       "groups": [
